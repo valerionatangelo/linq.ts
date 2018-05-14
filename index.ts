@@ -1,4 +1,4 @@
-import * as _ from "./global-extensions"
+import * as _ from "./linq-global-extensions"
 import * as Linq from "./linq"
 
 
