@@ -22,8 +22,7 @@ A simple implementation of `List<T>` is also present.
 
 ```typescript
 
-import * as _ from "global-extensions"
-import * as Linq from "linq"
+import from "linq"
 
 let nums: number[] = [5,3,4,1,9,2,8,0,6,7];
 
