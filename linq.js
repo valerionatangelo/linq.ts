@@ -102,6 +102,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Exceptions = require("./linq-exceptions");
+    Array.prototype.asLinq = function () {
+        return new LinqIterableProxy(this);
+    };
+    String.prototype.asLinq = function () {
+        return new LinqIterableProxy(this);
+    };
+    Set.prototype.asLinq = function () {
+        return new LinqIterableProxy(this);
+    };
+    Map.prototype.asLinq = function () {
+        return (new LinqIterableProxy(this)).select(function (x) { return new KeyValuePair(x[0], x[1]); });
+    };
+    var Linq = /** @class */ (function () {
+        function Linq() {
+        }
+        Linq.fromObject = function (source) {
+            return Object.keys(source).asLinq().select(function (k) { return new KeyValuePair(k, source[k]); });
+        };
+        Linq.fromArray = function (source) {
+            return new LinqIterableProxy(source);
+        };
+        Linq.fromString = function (source) {
+            return new LinqIterableProxy(source);
+        };
+        Linq.fromSet = function (source) {
+            return new LinqIterableProxy(source);
+        };
+        Linq.fromMap = function (source) {
+            return (new LinqIterableProxy(source)).select(function (x) { return new KeyValuePair(x[0], x[1]); });
+        };
+        return Linq;
+    }());
+    exports.Linq = Linq;
     var LinqIterableBase = /** @class */ (function () {
         function LinqIterableBase() {
             var _this = this;
@@ -274,8 +307,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                     else
                         currAcc = entry.value;
                 }
-                else
-                    currAcc = accumulatorFunc(initialAccumulator, entry.value);
+                else {
+                    if (entry.done == false)
+                        currAcc = accumulatorFunc(initialAccumulator, entry.value);
+                }
                 while ((entry = iterator.next()).done == false)
                     currAcc = accumulatorFunc(currAcc, entry.value);
                 return currAcc;
@@ -455,31 +490,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return KeyValuePair;
     }());
     exports.KeyValuePair = KeyValuePair;
-    var LinqGrouping = /** @class */ (function (_super) {
-        __extends(LinqGrouping, _super);
-        function LinqGrouping(key, elements) {
-            var _this = _super.call(this) || this;
-            _this._key = key;
-            _this._elements = elements;
-            return _this;
-        }
-        LinqGrouping.prototype.getIterator = function () {
-            return this.elements[Symbol.iterator]();
-        };
-        Object.defineProperty(LinqGrouping.prototype, "elements", {
-            get: function () { return this._elements; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinqGrouping.prototype, "key", {
-            get: function () { return this._key; },
-            enumerable: true,
-            configurable: true
-        });
-        ;
-        return LinqGrouping;
-    }(LinqIterableBase));
-    exports.LinqGrouping = LinqGrouping;
     var LinqGroupByIterable = /** @class */ (function (_super) {
         __extends(LinqGroupByIterable, _super);
         function LinqGroupByIterable(source, keySelector, valueSelector) {
@@ -1053,9 +1063,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     exports.LinqUndefinedIfEmptyIterable = LinqUndefinedIfEmptyIterable;
     var List = /** @class */ (function (_super) {
         __extends(List, _super);
-        function List() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.add = function (item) { _this.arrayData.push(item); };
+        function List(source) {
+            if (source === void 0) { source = new Array(); }
+            var _this = _super.call(this, source instanceof Array ? source : new LinqIterableProxy(source).toArray()) || this;
+            _this.add = function (item) { _this.elements.push(item); };
             _this.clear = function () { _this._source = new Array(); };
             _this.remove = function (item) {
                 var index = _this.indexOf(item);
@@ -1070,19 +1081,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 return indexOrDefault.i;
             };
             _this.removeAt = function (index) {
-                _this.arrayData.splice(index, 1);
+                _this.elements.splice(index, 1);
             };
             return _this;
         }
-        Object.defineProperty(List.prototype, "arrayData", {
+        Object.defineProperty(List.prototype, "elements", {
             get: function () { return this._source; },
             enumerable: true,
             configurable: true
         });
         List.prototype.insert = function (index, item) {
-            this.arrayData.splice(index, 0, item);
+            this.elements.splice(index, 0, item);
         };
         return List;
     }(LinqIterableProxy));
     exports.List = List;
+    var LinqGrouping = /** @class */ (function (_super) {
+        __extends(LinqGrouping, _super);
+        function LinqGrouping(key, elements) {
+            if (elements === void 0) { elements = []; }
+            var _this = _super.call(this, elements) || this;
+            _this._key = key;
+            return _this;
+        }
+        LinqGrouping.prototype.getIterator = function () {
+            return this.elements[Symbol.iterator]();
+        };
+        Object.defineProperty(LinqGrouping.prototype, "key", {
+            get: function () { return this._key; },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        return LinqGrouping;
+    }(List));
+    exports.LinqGrouping = LinqGrouping;
 });

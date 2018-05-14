@@ -4,11 +4,12 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports"], factory);
+        define(["require", "exports", "./linq"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var linq_1 = require("./linq");
     //var x = new Linq<number>();
     var TestClass = /** @class */ (function () {
         /**
@@ -144,7 +145,7 @@
                 computer: 1,
                 macchina: 99
             };
-            var query22 = q22test.asLinq()
+            var query22 = linq_1.Linq.fromObject(q22test)
                 .where(function (x) { return x.value > 10; })
                 .where(function (x) { return x.key.indexOf("c") > -1; });
             console.log(query22.toArray());
