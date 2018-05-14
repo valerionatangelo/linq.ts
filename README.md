@@ -1,11 +1,17 @@
 # linq.ts
 ## Implementation of LinQ using iterators for TypeScript
 
-This is an implementation of LinQ in TypeScript using iterators. 
+This is a full implementation of LinQ in TypeScript using iterators. 
 
 `for-in` loops has not been used so the code can also target ES5
 
-Many functionalities are not fully tested
+Many functionalities are not fully tested.
+
+The methods `singleOrDefault`, `firstOrDefault`, `elementAtOrDefault`, `lastOrDefault`, `defaultIfEmpty` have been replaced with `singleOrUndefined`, `firstOrUndefined`, `elementAtOrUndefined`, `lastOrUndefined`, `undefinedIfEmpty` because of the language limitations.
+
+The code extends `Array`, `Map`, `Set`, `String` and `Object` prototypes with a `asLinq()` method (see examples in index.ts for more information).
+
+A simple implementation of `List<T>` is also present.
 
 
 ## How to use
@@ -28,3 +34,6 @@ console.log(query01.toArray());
 ```
 
 
+#### Advanced usage
+
+Please refer to index.ts for examples on more advanced usage. This readme file might be updated in the future with more detailed tutorials.
