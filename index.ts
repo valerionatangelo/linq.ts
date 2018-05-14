@@ -1,6 +1,4 @@
-import * as _ from "./linq-global-extensions"
-import * as Linq from "./linq"
-
+import { Linq } from "./linq"
 
 //var x = new Linq<number>();
 
@@ -265,7 +263,8 @@ export class Tests {
             macchina: 99
         };
         
-        let query22 = q22test.asLinq()
+        
+        let query22 = Linq.fromObject(q22test)
             .where(x => x.value > 10)
             .where(x => x.key.indexOf("c") > -1)
             ;

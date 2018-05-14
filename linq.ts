@@ -64,6 +64,71 @@ import * as Exceptions from "./linq-exceptions"
 
 
 
+declare global {
+    interface Array<T> {
+        asLinq(): LinqIterableBase<T>;
+    }
+
+    interface String {
+        asLinq(): LinqIterableBase<string>;
+    }
+
+    interface Set<T> {
+        asLinq(): LinqIterableBase<T>;
+    }
+
+    interface Map<K, V> {
+        asLinq(): LinqIterableBase<KeyValuePair<K, V>>;
+    }
+
+    /* interface Object {
+        asLinq(): Linq.LinqIterableBase<Linq.KeyValuePair<string, any>>;
+    } */
+}
+
+Array.prototype.asLinq = function () {
+    return new LinqIterableProxy(this);
+}
+
+String.prototype.asLinq = function () {
+    return new LinqIterableProxy(this);
+}
+
+Set.prototype.asLinq = function () {
+    return new LinqIterableProxy(this);
+}
+
+Map.prototype.asLinq = function() {
+    return (new LinqIterableProxy(this)).select(x => new KeyValuePair(x[0], x[1]));
+}
+
+
+
+
+
+export class Linq {
+    static fromObject(source : Object) : LinqIterableBase<KeyValuePair<string, any>> {
+        return Object.keys(source).asLinq().select(k => new KeyValuePair(k, (<any>source)[k]));
+    }
+
+    static fromArray<T>(source : T[]) : LinqIterableBase<T> {
+        return new LinqIterableProxy(source);
+    }
+
+    static fromString(source : string) : LinqIterableBase<string> {
+        return new LinqIterableProxy(source);
+    }
+
+    static fromSet<T>(source : Set<T>) : LinqIterableBase<T> {
+        return new LinqIterableProxy(source);
+    }
+
+    static fromMap<K, V>(source : Map<K,V>) : LinqIterableBase<KeyValuePair<K,V>> {
+        return (new LinqIterableProxy(source)).select(x => new KeyValuePair(x[0], x[1]));
+    }
+}
+
+
 export abstract class LinqIterableBase<T> implements Iterable<T> {
     public [Symbol.iterator](): Iterator<T> { return this.getIterator(); }
 
@@ -387,7 +452,10 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         }
 
         else
-            currAcc = accumulatorFunc(initialAccumulator, entry.value);
+        {
+            if (entry.done == false)
+                currAcc = accumulatorFunc(initialAccumulator, entry.value);
+        }
 
 
         while ((entry = iterator.next()).done == false) 
@@ -703,25 +771,7 @@ export class KeyValuePair<TKey, TValue> {
 }
 
 
-export class LinqGrouping<TKey, TValue> extends LinqIterableBase<TValue> {
-    
-    constructor(key : TKey, elements : TValue[]) {
-        super();
-        this._key = key;
-        this._elements = elements;
-    }
 
-    protected getIterator() : Iterator<TValue> {
-        return this.elements[Symbol.iterator]();
-    }
-
-    
-    private _elements : TValue[];
-    public get elements(): TValue[] { return this._elements; }
-
-    private _key: TKey;
-    public get key(): TKey { return this._key };
-}
 
 
 
@@ -1268,9 +1318,9 @@ export class List<T> extends LinqIterableProxy<T> {
         super(source instanceof Array ? source : new LinqIterableProxy(source).toArray());
     }
 
-    protected get arrayData() : T[] { return this._source as T[]; }
+    public get elements() : T[] { return this._source as T[]; }
 
-    public add = (item : T) : void =>  { this.arrayData.push(item); }
+    public add = (item : T) : void =>  { this.elements.push(item); }
 
     public clear = () : void => { this._source = new Array<T>(); }
 
@@ -1289,17 +1339,31 @@ export class List<T> extends LinqIterableProxy<T> {
 
         return indexOrDefault.i;
     }
-
-
     
     public insert(index: number, item : T) {
-        this.arrayData.splice(index, 0, item);
+        this.elements.splice(index, 0, item);
     }
 
     
     public removeAt = (index : number) : void => {
-        this.arrayData.splice(index, 1);
+        this.elements.splice(index, 1);
     }
+}
+
+
+export class LinqGrouping<TKey, TValue> extends List<TValue> {
+    
+    constructor(key : TKey, elements : TValue[] = []) {
+        super(elements);
+        this._key = key;
+    }
+
+    protected getIterator() : Iterator<TValue> {
+        return this.elements[Symbol.iterator]();
+    }
+
+    private _key: TKey;
+    public get key(): TKey { return this._key };
 }
 
 
