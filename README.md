@@ -9,7 +9,9 @@ Many functionalities are not fully tested.
 
 The methods `singleOrDefault`, `firstOrDefault`, `elementAtOrDefault`, `lastOrDefault`, `defaultIfEmpty` have been replaced with `singleOrUndefined`, `firstOrUndefined`, `elementAtOrUndefined`, `lastOrUndefined`, `undefinedIfEmpty` because of the language limitations.
 
-The code extends `Array`, `Map`, `Set`, `String` and `Object` prototypes with a `asLinq()` method (see examples in index.ts for more information).
+The code extends `Array`, `Map`, `Set` and `String` prototypes with a `asLinq()` method (see examples in index.ts for more information).
+
+There are also `Linq.fromArray`, `Linq.fromMap`, `Linq.fromSet`, `Linq.fromString` and `Linq.fromObject` methods.
 
 A simple implementation of `List<T>` is also present.
 
