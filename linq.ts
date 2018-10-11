@@ -91,7 +91,7 @@ Array.prototype.asLinq = function () {
 }
 
 String.prototype.asLinq = function () {
-    return new LinqIterableProxy(this);
+    return new LinqIterableProxy<string>(this);
 }
 
 Set.prototype.asLinq = function () {
