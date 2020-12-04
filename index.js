@@ -9,6 +9,7 @@
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Tests = void 0;
     var linq_1 = require("./linq");
     //var x = new Linq<number>();
     var TestClass = /** @class */ (function () {

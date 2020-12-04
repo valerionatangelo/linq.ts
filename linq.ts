@@ -192,11 +192,15 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
     
     public foreach = (action: (item: T) => void) => {
         let iterable = this;
-        let iterator = iterable[Symbol.iterator]();
         
+        
+        for (let entry of iterable)
+            action(entry);
+
+        /*let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
-            action(entry.value);
+            action(entry.value);*/
     }
 
 
@@ -289,7 +293,15 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             }
         }
 
+        if (position < 0) return undefined; // exception??
+        if (position > 0) iterable = iterable.skip(position);
         
+        for (let entry of iterable)
+            return entry;
+
+        throw new Exceptions.LinqNotEnoughElementsException();
+
+        /*
         let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
@@ -297,6 +309,7 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
                 return entry.value;
 
         throw new Exceptions.LinqNotEnoughElementsException();
+        */
     }
 
 
@@ -318,14 +331,18 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             }
         }
 
-        
+        if (position < 0) return undefined; // exception??
+        if (position > 0) iterable = iterable.skip(position);
+        return iterable.firstOrUndefined();
+
+        /*
         let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
             if (position-- == 0)
                 return entry.value;
 
-        return undefined;
+        return undefined;*/
     }
 
 
@@ -345,7 +362,21 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             }
         }
         
-        
+
+        let lastValue : T | undefined = undefined;
+        let count : number = 0;
+        for (let entry of iterable) {
+            count++;
+            lastValue = entry;
+        }
+
+        if (count == 0)
+            throw new Exceptions.LinqNoElementsException();
+
+        return lastValue;
+
+
+        /*
         let iterator = iterable[Symbol.iterator]();
         let firstEntry = iterator.next();
         let lastValue : T;
@@ -360,7 +391,7 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         while ((entry = iterator.next()).done == false) 
             lastValue = entry.value;
 
-        return lastValue;
+        return lastValue;*/
     }
 
 
@@ -380,7 +411,15 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             }
         }
         
-        
+
+        let lastValue : T | undefined = undefined;
+
+        for (let entry of iterable)
+            lastValue = entry;
+
+        return lastValue;
+
+        /*
         let iterator = iterable[Symbol.iterator]();
         let firstEntry = iterator.next();
         let lastValue : T;
@@ -395,13 +434,13 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         while ((entry = iterator.next()).done == false) 
             lastValue = entry.value;
 
-        return lastValue;
+        return lastValue;*/
     }
 
 
 
 
-    public undefinedIfEmpty = () : LinqIterableBase<T | undefined> => new LinqUndefinedIfEmptyIterable(this);
+    public undefinedIfEmpty = () : LinqIterableBase<T> | undefined =>  new LinqUndefinedIfEmptyIterable(this);
         
 
     public sequenceEquals : {
@@ -427,6 +466,7 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             if (!LinqIterableBase.equals(entry1.value, entry2.value)) return false;
         } while (true);
     }
+
     
     public aggregate : {
         <TAcc>(accumulatorFunc: (a : TAcc, x : T) => TAcc, initialAccumulator : TAcc) : TAcc | undefined
@@ -435,10 +475,18 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
      {
         let currAcc : any;
 
-        if (initialAccumulator)
+        if (initialAccumulator !== undefined)
             currAcc = initialAccumulator;
 
         let iterable : LinqIterableBase<T> = this;
+
+        for (let entry of iterable) 
+            currAcc = accumulatorFunc(currAcc, entry);
+        
+        return currAcc;
+
+
+        /*
         let iterator = iterable[Symbol.iterator]();
 
         let entry: IteratorResult<T> = iterator.next();
@@ -458,10 +506,13 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         }
 
 
+        
+
+
         while ((entry = iterator.next()).done == false) 
             currAcc = accumulatorFunc(currAcc, entry.value);
 
-        return currAcc;
+        return currAcc;*/
     }
 
 
@@ -470,13 +521,16 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
      public toArray = () : T[] => {
         let result : T[] = [];
-
         let iterable : LinqIterableBase<T> = this;
-        let iterator = iterable[Symbol.iterator]();
+
+        for (let entry of iterable)
+            result.push(entry);
+
+        /*let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         
         while ((entry = iterator.next()).done == false) 
-            result.push(entry.value);
+            result.push(entry.value);*/
 
         return result;
     }
@@ -484,13 +538,17 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
     public toObject = <TValue>(keySelector : (x : T) => string, valueSelector: (x : T) => TValue) : {} => {
         let result = {};
-
         let iterable : LinqIterableBase<T> = this;
-        let iterator = iterable[Symbol.iterator]();
+
+        for (let entry of iterable)
+            (result as any)[keySelector(entry)] = valueSelector(entry);
+
+
+        /*let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         
         while ((entry = iterator.next()).done == false) 
-            (result as any)[keySelector(entry.value)] = valueSelector(entry.value);
+            (result as any)[keySelector(entry.value)] = valueSelector(entry.value);*/
 
         return result;
     }
@@ -634,12 +692,22 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         (predicate: (x: T) => boolean) : boolean
     } = (predicate?: (x: T) => boolean) : boolean => {
         let iterable : Iterable<T> = this;
+        if (predicate === undefined) predicate = x => true;
+
+        for (let entry of iterable) {
+            if (predicate(entry))
+                return true;
+        }
+
+        return false;
+
+        /*
         let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
-        if (predicate === undefined) predicate = x => true;
+        
         while ((entry = iterator.next()).done == false) 
             if (predicate(entry.value))
-                return true;
+                return true;*/
     }
      
 
@@ -653,14 +721,23 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         (selector : (x: T) => number) : number
    } = (selector?: (x: T) => number) : number => {
        let iterable : LinqIterableBase<T> = this;
-       let iterator = iterable[Symbol.iterator]();
+       
 
        if (selector === undefined) selector = x => (x as any) as number;
        let result : number = 0;
 
+        for (let entry of iterable) {
+            let n = selector(entry);
+            if (n !== undefined)
+                result += n;
+        }
+
+        /*
+    let iterator = iterable[Symbol.iterator]();
        let entry: IteratorResult<T>;
        while ((entry = iterator.next()).done == false) 
            result += selector(entry.value);
+        */
 
        return result;
    }
@@ -673,18 +750,26 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         (selector : (x: T) => number) : number | undefined
     } = (selector?: (x: T) => number) : number | undefined => {
     let iterable : LinqIterableBase<T> = this;
-    let iterator = iterable[Symbol.iterator]();
+    
 
     if (selector === undefined) selector = x => (x as any) as number;
     let result : number | undefined = undefined;
 
+    for (let entry in iterable) {
+        let n = selector(entry as any as T); // compiler bug
+        if (result === undefined || result > n)
+            result = n;
+    }
+
+    /*
+    let iterator = iterable[Symbol.iterator]();
     let entry: IteratorResult<T>;
     while ((entry = iterator.next()).done == false) 
         {
             let n = selector(entry.value);
             if (result === undefined || result > n)
                 result = n;
-        }
+        }*/
 
     return result;
     }
@@ -696,18 +781,26 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
         (selector : (x: T) => number) : number | undefined
     } = (selector?: (x: T) => number) : number | undefined => {
         let iterable : LinqIterableBase<T> = this;
-        let iterator = iterable[Symbol.iterator]();
+        
 
         if (selector === undefined) selector = x => (x as any) as number;
         let result : number | undefined = undefined;
 
+        
+        for (let entry in iterable) {
+            let n = selector(entry as any as T); // compiler bug
+            if (result === undefined || result < n)
+                result = n;
+        }
+
+        /*let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
         {
             let n = selector(entry.value);
             if (result === undefined || result < n)
                 result = n;
-        }
+        }*/
 
         return result;
     }
@@ -719,13 +812,18 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
     } = (predicate?: (x: T) => boolean) : number => {
         let iterable : LinqIterableBase<T> = this;
         if (predicate !== undefined) iterable = iterable.where(predicate);
-        let iterator = iterable[Symbol.iterator]();
+        
 
         let result : number = 0;
 
+        for (let entry of iterable)
+            result++;
+        
+        /*    
+        let iterator = iterable[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
-            result++;
+            result++;*/
 
         return result;
     }
@@ -841,7 +939,7 @@ export class LinqSelectManyIterable<T, TCollection, TResult> extends LinqIterabl
     private * algo() {
         if (this.finalSelector == undefined) this.finalSelector = (outer, inner) => (inner as any) as TResult;
 
-        let iterator = this.source[Symbol.iterator]();
+        /*let iterator = this.source[Symbol.iterator]();
         let entry: IteratorResult<T>;
         while ((entry = iterator.next()).done == false) 
         {
@@ -851,14 +949,14 @@ export class LinqSelectManyIterable<T, TCollection, TResult> extends LinqIterabl
 
             while ((innerEntry = innerIterator.next()).done == false) 
                 yield this.finalSelector(entry.value, innerEntry.value);
-        }
+        }*/
 
 
-         /*
-        for (let entry of source)
-            for (let innerEntry of selector(entry))
-                yield innerEntry;
-        */
+         
+        for (let entry of this.source)
+            for (let innerEntry of this.selector(entry))
+                yield this.finalSelector(entry, innerEntry);
+        
     }
 }
 
@@ -880,7 +978,16 @@ export class LinqJoinIterable<TLeft, TRight, TLeftKey, TRightKey, TResult> exten
     }
 
     private * algo() {
-       
+       for (let leftEntry of this._leftSource) {
+           for (let rightEntry of this._rightSource) {
+                let leftKey = this._leftKeySelector(leftEntry);
+                let rightKey = this._rightKeySelector(rightEntry);
+
+                if (LinqIterableBase.equals(leftKey, rightKey)) yield this._finalSelector(leftEntry, rightEntry);
+           }
+       }
+
+        /*
         let leftIterator = this._leftSource[Symbol.iterator]();
         let leftEntry: IteratorResult<TLeft>;
         while ((leftEntry = leftIterator.next()).done == false)
@@ -896,7 +1003,7 @@ export class LinqJoinIterable<TLeft, TRight, TLeftKey, TRightKey, TResult> exten
                 if (LinqIterableBase.equals(leftKey, rightKey)) yield this._finalSelector(leftEntry.value, rightEntry.value);
 
             } 
-        } 
+        } */    
 
 
     }
@@ -922,6 +1029,7 @@ export class LinqGroupJoinIterable<TLeft, TRight, TLeftKey, TRightKey, TResult> 
     }
 
     private * algo() {
+        /*
         let groupedRight = new LinqIterableProxy(this._rightSource).groupBy(this._rightKeySelector);
         let tmp = groupedRight.toArray();
        
@@ -939,7 +1047,20 @@ export class LinqGroupJoinIterable<TLeft, TRight, TLeftKey, TRightKey, TResult> 
             yield this._finalSelector(leftEntry.value, rightGroup);
 
         } 
+        */
 
+        let groupedRight = new LinqIterableProxy(this._rightSource).groupBy(this._rightKeySelector);
+        let tmp = groupedRight.toArray();
+
+        for (let leftEntry of this._leftSource) {
+            let leftKey = this._leftKeySelector(leftEntry);
+            let rightGroup = groupedRight.singleOrUndefined(x =>LinqIterableBase.equals(x.key, leftKey));
+        
+            if (rightGroup === undefined)
+                rightGroup = new LinqGrouping((leftKey as any) as TRightKey, [] as Array<TRight>);
+        
+            yield this._finalSelector(leftEntry, rightGroup);
+        }
 
     }
 }
@@ -960,25 +1081,11 @@ export class LinqConcatIterable<T> extends LinqIterableBase<T> {
     }
 
     private * algo() {
-
-
-        let iterator = this.source1[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-            yield entry.value;
-
-        iterator = this.source2[Symbol.iterator]();
-        while ((entry = iterator.next()).done == false) 
-            yield entry.value;
-
-
-         /*
-        for (let entry of source1)
+        for (let entry of this.source1)
             yield entry;
 
-        for (let entry of source2)
+        for (let entry of this.source2)
             yield entry;
-        */
     }
 }
 
@@ -1033,13 +1140,9 @@ export class LinqTakeIterable<T> extends LinqIterableBase<T> {
     }
 
     private * algo() : IterableIterator<T> {
-        let iterator = this._source[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-            if (--this._count >= 0)
-                yield entry.value;
-            else
-                return;
+        for (let entry of this._source) 
+            if ((--this._count) >= 0)
+                yield entry;
     }
 }
 
@@ -1058,13 +1161,12 @@ export class LinqTakeWhileIterable<T> extends LinqIterableBase<T> {
     }
 
     private * algo() : IterableIterator<T> {
-        let iterator = this._source[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-            if (this._predicate(entry.value))
-                yield entry.value;
-            else
+        for (let entry of this._source) {
+            if (!this._predicate(entry))
                 return;
+
+            yield entry;
+        }
     }
 }
 
@@ -1083,11 +1185,9 @@ export class LinqSkipIterable<T> extends LinqIterableBase<T> {
     }
 
     private * algo() {
-        let iterator = this._source[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-            if (--this._count < 0)
-                yield entry.value;
+        for (let entry of this._source) 
+            if ((--this._count) < 0)
+                yield entry;
     }
 }
 
@@ -1108,20 +1208,14 @@ export class LinqSkipWhileIterable<T> extends LinqIterableBase<T> {
 
     private * algo() {
         let doSkip = true;
-
-        let iterator = this._source[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
+        for (let entry of this._source) {
             if (!doSkip)
-                yield entry.value;
-            else
-            {
-                if (!this._predicate(entry.value))
-                {
-                    doSkip = false;
-                    yield entry.value;
-                }
+                yield entry;
+            else if (!this._predicate(entry)) {
+                doSkip = false;
+                yield entry;
             }
+        }
     }
 }
 
@@ -1142,17 +1236,16 @@ export class LinqCastIterable<TSource, TResult> extends LinqIterableBase<TResult
 
     private * algo(): Iterator<TResult> {
 
-
+/*
         let iterator = this.source[Symbol.iterator]();
         let entry: IteratorResult<TSource>;
         while ((entry = iterator.next()).done == false) 
             yield (entry.value as any) as TResult;
-        
-
-        /*
-        for (let entry of source)
-            yield (entry.value as any) as TResult;
         */
+
+        
+        for (let entry of this.source)
+            yield (entry as any) as TResult;
     }
 }
 
@@ -1174,18 +1267,17 @@ export class LinqOfTypeIterable<TSource, TResult> extends LinqIterableBase<TResu
     }
 
     private * algo(): IterableIterator<TResult> {
-        let iterator = this.source[Symbol.iterator]();
+       /* let iterator = this.source[Symbol.iterator]();
         let entry: IteratorResult<TSource>;
         while ((entry = iterator.next()).done == false) 
             if (entry.value instanceof this.type)
-                yield entry.value as TResult;
+                yield entry.value as TResult;*/
         
 
-        /*
-        for (let entry of source)
-              if (entry.value instanceof type)
+        for (let entry of this.source)
+              if (entry instanceof this.type)
                     yield entry as TResult;
-        */
+        
     }
 }
 
@@ -1203,15 +1295,8 @@ export class LinqSelectIterable<TSource, TResult> extends LinqIterableBase<TResu
     }
 
     private * algo(): IterableIterator<TResult> {
-        let index = 0;
-        let iterator = this.source[Symbol.iterator]();
-        let entry: IteratorResult<TSource>;
-        while ((entry = iterator.next()).done == false) 
-            yield this.selector(entry.value, index++);
-        
-
-        /*for (let entry of source)
-               yield selector(entry);*/
+        for (let entry of this.source)
+               yield this.selector(entry);
     }
 }
 
@@ -1231,16 +1316,9 @@ export class LinqWhereIterable<T> extends LinqIterableBase<T> {
     }
 
     private * algo(): IterableIterator<T> {
-        let iterator = this.source[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-            if (this.predicate(entry.value))
-                yield entry.value;
-        
-
-        /*for (let entry of source)
-                if (predicate(entry))
-                    yield entry;*/
+        for (let entry of this.source)
+                if (this.predicate(entry))
+                    yield entry;
     }
 
 }
@@ -1306,8 +1384,13 @@ export class LinqUndefinedIfEmptyIterable<T> extends LinqIterableBase<T | undefi
             yield firstEntry.value;
 
         let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
+        while (true) {
+            let entry = iterator.next();
+            if (entry.done) break;
             yield entry.value;
+        }
+        /*while ((entry = iterator.next()).done == false) 
+            yield entry.value;*/
     }
 
 }

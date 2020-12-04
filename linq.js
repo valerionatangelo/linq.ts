@@ -54,9 +54,12 @@ In più fatto:
 
 */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -70,8 +73,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -90,6 +93,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
         var v = factory(require, exports);
@@ -101,6 +115,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.LinqGrouping = exports.List = exports.LinqUndefinedIfEmptyIterable = exports.LinqOrderByIterable = exports.LinqWhereIterable = exports.LinqSelectIterable = exports.LinqOfTypeIterable = exports.LinqCastIterable = exports.LinqSkipWhileIterable = exports.LinqSkipIterable = exports.LinqTakeWhileIterable = exports.LinqTakeIterable = exports.LinqReverseIterable = exports.LinqConcatIterable = exports.LinqGroupJoinIterable = exports.LinqJoinIterable = exports.LinqSelectManyIterable = exports.LinqGroupByIterable = exports.KeyValuePair = exports.LinqIterableProxy = exports.LinqIterableBase = exports.Linq = void 0;
     var Exceptions = require("./linq-exceptions");
     Array.prototype.asLinq = function () {
         return new LinqIterableProxy(this);
@@ -139,11 +154,25 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         function LinqIterableBase() {
             var _this = this;
             this.foreach = function (action) {
+                var e_1, _a;
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
+                try {
+                    for (var iterable_1 = __values(iterable), iterable_1_1 = iterable_1.next(); !iterable_1_1.done; iterable_1_1 = iterable_1.next()) {
+                        var entry = iterable_1_1.value;
+                        action(entry);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (iterable_1_1 && !iterable_1_1.done && (_a = iterable_1.return)) _a.call(iterable_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+                /*let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
                 while ((entry = iterator.next()).done == false)
-                    action(entry.value);
+                    action(entry.value);*/
             };
             this.first = function (predicate) {
                 var iterable = _this;
@@ -192,6 +221,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 throw new Exceptions.LinqMoreThenOneElementException();
             };
             this.elementAt = function (position) {
+                var e_2, _a;
                 var iterable = _this;
                 // OPTIMIZATION FOR ARRAY AND LIST
                 if (iterable instanceof LinqIterableProxy || iterable instanceof List) {
@@ -203,12 +233,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             return source[position];
                     }
                 }
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
+                if (position < 0)
+                    return undefined; // exception??
+                if (position > 0)
+                    iterable = iterable.skip(position);
+                try {
+                    for (var iterable_2 = __values(iterable), iterable_2_1 = iterable_2.next(); !iterable_2_1.done; iterable_2_1 = iterable_2.next()) {
+                        var entry = iterable_2_1.value;
+                        return entry;
+                    }
+                }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (iterable_2_1 && !iterable_2_1.done && (_a = iterable_2.return)) _a.call(iterable_2);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+                throw new Exceptions.LinqNotEnoughElementsException();
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
                 while ((entry = iterator.next()).done == false)
                     if (position-- == 0)
                         return entry.value;
+        
                 throw new Exceptions.LinqNotEnoughElementsException();
+                */
             };
             this.elementAtOrUndefined = function (position) {
                 var iterable = _this;
@@ -222,14 +273,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             return source[position];
                     }
                 }
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
+                if (position < 0)
+                    return undefined; // exception??
+                if (position > 0)
+                    iterable = iterable.skip(position);
+                return iterable.firstOrUndefined();
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
                 while ((entry = iterator.next()).done == false)
                     if (position-- == 0)
                         return entry.value;
-                return undefined;
+        
+                return undefined;*/
             };
             this.last = function () {
+                var e_3, _a;
                 var iterable = _this;
                 // OPTIMIZATION FOR ARRAY AND LIST
                 if (iterable instanceof LinqIterableProxy || iterable instanceof List) {
@@ -241,18 +300,44 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             return source[source.length - 1];
                     }
                 }
-                var iterator = iterable[Symbol.iterator]();
-                var firstEntry = iterator.next();
-                var lastValue;
+                var lastValue = undefined;
+                var count = 0;
+                try {
+                    for (var iterable_3 = __values(iterable), iterable_3_1 = iterable_3.next(); !iterable_3_1.done; iterable_3_1 = iterable_3.next()) {
+                        var entry = iterable_3_1.value;
+                        count++;
+                        lastValue = entry;
+                    }
+                }
+                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                finally {
+                    try {
+                        if (iterable_3_1 && !iterable_3_1.done && (_a = iterable_3.return)) _a.call(iterable_3);
+                    }
+                    finally { if (e_3) throw e_3.error; }
+                }
+                if (count == 0)
+                    throw new Exceptions.LinqNoElementsException();
+                return lastValue;
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let firstEntry = iterator.next();
+                let lastValue : T;
+        
                 if (firstEntry.done == true)
                     throw new Exceptions.LinqNoElementsException();
+        
                 lastValue = firstEntry.value;
-                var entry;
+        
+                let entry: IteratorResult<T>;
+                
                 while ((entry = iterator.next()).done == false)
                     lastValue = entry.value;
-                return lastValue;
+        
+                return lastValue;*/
             };
             this.lastOrUndefined = function () {
+                var e_4, _a;
                 var iterable = _this;
                 // OPTIMIZATION FOR ARRAY AND LIST
                 if (iterable instanceof LinqIterableProxy || iterable instanceof List) {
@@ -264,16 +349,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             return source[source.length - 1];
                     }
                 }
-                var iterator = iterable[Symbol.iterator]();
-                var firstEntry = iterator.next();
-                var lastValue;
+                var lastValue = undefined;
+                try {
+                    for (var iterable_4 = __values(iterable), iterable_4_1 = iterable_4.next(); !iterable_4_1.done; iterable_4_1 = iterable_4.next()) {
+                        var entry = iterable_4_1.value;
+                        lastValue = entry;
+                    }
+                }
+                catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                finally {
+                    try {
+                        if (iterable_4_1 && !iterable_4_1.done && (_a = iterable_4.return)) _a.call(iterable_4);
+                    }
+                    finally { if (e_4) throw e_4.error; }
+                }
+                return lastValue;
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let firstEntry = iterator.next();
+                let lastValue : T;
+        
                 if (firstEntry.done == true)
                     return undefined;
+        
                 lastValue = firstEntry.value;
-                var entry;
+        
+                let entry: IteratorResult<T>;
+                
                 while ((entry = iterator.next()).done == false)
                     lastValue = entry.value;
-                return lastValue;
+        
+                return lastValue;*/
             };
             this.undefinedIfEmpty = function () { return new LinqUndefinedIfEmptyIterable(_this); };
             this.sequenceEquals = function (otherIterable) {
@@ -295,43 +401,100 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 } while (true);
             };
             this.aggregate = function (accumulatorFunc, initialAccumulator) {
+                var e_5, _a;
                 var currAcc;
-                if (initialAccumulator)
+                if (initialAccumulator !== undefined)
                     currAcc = initialAccumulator;
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
-                var entry = iterator.next();
-                if (initialAccumulator === undefined) {
+                try {
+                    for (var iterable_5 = __values(iterable), iterable_5_1 = iterable_5.next(); !iterable_5_1.done; iterable_5_1 = iterable_5.next()) {
+                        var entry = iterable_5_1.value;
+                        currAcc = accumulatorFunc(currAcc, entry);
+                    }
+                }
+                catch (e_5_1) { e_5 = { error: e_5_1 }; }
+                finally {
+                    try {
+                        if (iterable_5_1 && !iterable_5_1.done && (_a = iterable_5.return)) _a.call(iterable_5);
+                    }
+                    finally { if (e_5) throw e_5.error; }
+                }
+                return currAcc;
+                /*
+                let iterator = iterable[Symbol.iterator]();
+        
+                let entry: IteratorResult<T> = iterator.next();
+        
+                if (initialAccumulator === undefined)
+                {
                     if (entry.done)
                         return undefined;
                     else
                         currAcc = entry.value;
                 }
-                else {
+        
+                else
+                {
                     if (entry.done == false)
                         currAcc = accumulatorFunc(initialAccumulator, entry.value);
                 }
+        
+        
+                
+        
+        
                 while ((entry = iterator.next()).done == false)
                     currAcc = accumulatorFunc(currAcc, entry.value);
-                return currAcc;
+        
+                return currAcc;*/
             };
             //public toArray = () : T[] => Array.from(this);
             this.toArray = function () {
+                var e_6, _a;
                 var result = [];
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
+                try {
+                    for (var iterable_6 = __values(iterable), iterable_6_1 = iterable_6.next(); !iterable_6_1.done; iterable_6_1 = iterable_6.next()) {
+                        var entry = iterable_6_1.value;
+                        result.push(entry);
+                    }
+                }
+                catch (e_6_1) { e_6 = { error: e_6_1 }; }
+                finally {
+                    try {
+                        if (iterable_6_1 && !iterable_6_1.done && (_a = iterable_6.return)) _a.call(iterable_6);
+                    }
+                    finally { if (e_6) throw e_6.error; }
+                }
+                /*let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
+                
                 while ((entry = iterator.next()).done == false)
-                    result.push(entry.value);
+                    result.push(entry.value);*/
                 return result;
             };
             this.toObject = function (keySelector, valueSelector) {
+                var e_7, _a;
                 var result = {};
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
+                try {
+                    for (var iterable_7 = __values(iterable), iterable_7_1 = iterable_7.next(); !iterable_7_1.done; iterable_7_1 = iterable_7.next()) {
+                        var entry = iterable_7_1.value;
+                        result[keySelector(entry)] = valueSelector(entry);
+                    }
+                }
+                catch (e_7_1) { e_7 = { error: e_7_1 }; }
+                finally {
+                    try {
+                        if (iterable_7_1 && !iterable_7_1.done && (_a = iterable_7.return)) _a.call(iterable_7);
+                    }
+                    finally { if (e_7) throw e_7.error; }
+                }
+                /*let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
+                
                 while ((entry = iterator.next()).done == false)
-                    result[keySelector(entry.value)] = valueSelector(entry.value);
+                    (result as any)[keySelector(entry.value)] = valueSelector(entry.value);*/
                 return result;
             };
             this.toList = function () {
@@ -361,65 +524,129 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 return new LinqGroupByIterable(_this, keySelector, valueSelector);
             };
             this.any = function (predicate) {
+                var e_8, _a;
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
-                var entry;
                 if (predicate === undefined)
                     predicate = function (x) { return true; };
+                try {
+                    for (var iterable_8 = __values(iterable), iterable_8_1 = iterable_8.next(); !iterable_8_1.done; iterable_8_1 = iterable_8.next()) {
+                        var entry = iterable_8_1.value;
+                        if (predicate(entry))
+                            return true;
+                    }
+                }
+                catch (e_8_1) { e_8 = { error: e_8_1 }; }
+                finally {
+                    try {
+                        if (iterable_8_1 && !iterable_8_1.done && (_a = iterable_8.return)) _a.call(iterable_8);
+                    }
+                    finally { if (e_8) throw e_8.error; }
+                }
+                return false;
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
+                
                 while ((entry = iterator.next()).done == false)
                     if (predicate(entry.value))
-                        return true;
+                        return true;*/
             };
             this.all = function (predicate) { return !_this.any(function (x) { return !predicate(x); }); };
             this.contains = function (element) { return _this.any(function (x) { return LinqIterableBase.equals(x, element); }); };
             this.sum = function (selector) {
+                var e_9, _a;
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
                 if (selector === undefined)
                     selector = function (x) { return x; };
                 var result = 0;
-                var entry;
-                while ((entry = iterator.next()).done == false)
-                    result += selector(entry.value);
+                try {
+                    for (var iterable_9 = __values(iterable), iterable_9_1 = iterable_9.next(); !iterable_9_1.done; iterable_9_1 = iterable_9.next()) {
+                        var entry = iterable_9_1.value;
+                        var n = selector(entry);
+                        if (n !== undefined)
+                            result += n;
+                    }
+                }
+                catch (e_9_1) { e_9 = { error: e_9_1 }; }
+                finally {
+                    try {
+                        if (iterable_9_1 && !iterable_9_1.done && (_a = iterable_9.return)) _a.call(iterable_9);
+                    }
+                    finally { if (e_9) throw e_9.error; }
+                }
+                /*
+            let iterator = iterable[Symbol.iterator]();
+               let entry: IteratorResult<T>;
+               while ((entry = iterator.next()).done == false)
+                   result += selector(entry.value);
+                */
                 return result;
             };
             this.min = function (selector) {
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
                 if (selector === undefined)
                     selector = function (x) { return x; };
                 var result = undefined;
-                var entry;
-                while ((entry = iterator.next()).done == false) {
-                    var n = selector(entry.value);
+                for (var entry in iterable) {
+                    var n = selector(entry); // compiler bug
                     if (result === undefined || result > n)
                         result = n;
                 }
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
+                while ((entry = iterator.next()).done == false)
+                    {
+                        let n = selector(entry.value);
+                        if (result === undefined || result > n)
+                            result = n;
+                    }*/
                 return result;
             };
             this.max = function (selector) {
                 var iterable = _this;
-                var iterator = iterable[Symbol.iterator]();
                 if (selector === undefined)
                     selector = function (x) { return x; };
                 var result = undefined;
-                var entry;
-                while ((entry = iterator.next()).done == false) {
-                    var n = selector(entry.value);
+                for (var entry in iterable) {
+                    var n = selector(entry); // compiler bug
                     if (result === undefined || result < n)
                         result = n;
                 }
+                /*let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
+                while ((entry = iterator.next()).done == false)
+                {
+                    let n = selector(entry.value);
+                    if (result === undefined || result < n)
+                        result = n;
+                }*/
                 return result;
             };
             this.count = function (predicate) {
+                var e_10, _a;
                 var iterable = _this;
                 if (predicate !== undefined)
                     iterable = iterable.where(predicate);
-                var iterator = iterable[Symbol.iterator]();
                 var result = 0;
-                var entry;
+                try {
+                    for (var iterable_10 = __values(iterable), iterable_10_1 = iterable_10.next(); !iterable_10_1.done; iterable_10_1 = iterable_10.next()) {
+                        var entry = iterable_10_1.value;
+                        result++;
+                    }
+                }
+                catch (e_10_1) { e_10 = { error: e_10_1 }; }
+                finally {
+                    try {
+                        if (iterable_10_1 && !iterable_10_1.done && (_a = iterable_10.return)) _a.call(iterable_10);
+                    }
+                    finally { if (e_10) throw e_10.error; }
+                }
+                /*
+                let iterator = iterable[Symbol.iterator]();
+                let entry: IteratorResult<T>;
                 while ((entry = iterator.next()).done == false)
-                    result++;
+                    result++;*/
                 return result;
             };
             this.average = function (selector) {
@@ -534,28 +761,62 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqSelectManyIterable.prototype.algo = function () {
-            var iterator, entry, innerIterable, innerIterator, innerEntry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, _c, _d, innerEntry, e_11_1, e_12_1;
+            var e_12, _e, e_11, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
                     case 0:
                         if (this.finalSelector == undefined)
                             this.finalSelector = function (outer, inner) { return inner; };
-                        iterator = this.source[Symbol.iterator]();
-                        _a.label = 1;
+                        _g.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 5];
-                        innerIterable = new LinqIterableProxy(this.selector(entry.value));
-                        innerIterator = innerIterable[Symbol.iterator]();
-                        innerEntry = void 0;
-                        _a.label = 2;
+                        _g.trys.push([1, 12, 13, 14]);
+                        _a = __values(this.source), _b = _a.next();
+                        _g.label = 2;
                     case 2:
-                        if (!((innerEntry = innerIterator.next()).done == false)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.finalSelector(entry.value, innerEntry.value)];
+                        if (!!_b.done) return [3 /*break*/, 11];
+                        entry = _b.value;
+                        _g.label = 3;
                     case 3:
-                        _a.sent();
+                        _g.trys.push([3, 8, 9, 10]);
+                        _c = (e_11 = void 0, __values(this.selector(entry))), _d = _c.next();
+                        _g.label = 4;
+                    case 4:
+                        if (!!_d.done) return [3 /*break*/, 7];
+                        innerEntry = _d.value;
+                        return [4 /*yield*/, this.finalSelector(entry, innerEntry)];
+                    case 5:
+                        _g.sent();
+                        _g.label = 6;
+                    case 6:
+                        _d = _c.next();
+                        return [3 /*break*/, 4];
+                    case 7: return [3 /*break*/, 10];
+                    case 8:
+                        e_11_1 = _g.sent();
+                        e_11 = { error: e_11_1 };
+                        return [3 /*break*/, 10];
+                    case 9:
+                        try {
+                            if (_d && !_d.done && (_f = _c.return)) _f.call(_c);
+                        }
+                        finally { if (e_11) throw e_11.error; }
+                        return [7 /*endfinally*/];
+                    case 10:
+                        _b = _a.next();
                         return [3 /*break*/, 2];
-                    case 4: return [3 /*break*/, 1];
-                    case 5: return [2 /*return*/];
+                    case 11: return [3 /*break*/, 14];
+                    case 12:
+                        e_12_1 = _g.sent();
+                        e_12 = { error: e_12_1 };
+                        return [3 /*break*/, 14];
+                    case 13:
+                        try {
+                            if (_b && !_b.done && (_e = _a.return)) _e.call(_a);
+                        }
+                        finally { if (e_12) throw e_12.error; }
+                        return [7 /*endfinally*/];
+                    case 14: return [2 /*return*/];
                 }
             });
         };
@@ -577,29 +838,61 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqJoinIterable.prototype.algo = function () {
-            var leftIterator, leftEntry, rightIterator, rightEntry, leftKey, rightKey;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, leftEntry, _c, _d, rightEntry, leftKey, rightKey, e_13_1, e_14_1;
+            var e_14, _e, e_13, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
                     case 0:
-                        leftIterator = this._leftSource[Symbol.iterator]();
-                        _a.label = 1;
+                        _g.trys.push([0, 11, 12, 13]);
+                        _a = __values(this._leftSource), _b = _a.next();
+                        _g.label = 1;
                     case 1:
-                        if (!((leftEntry = leftIterator.next()).done == false)) return [3 /*break*/, 6];
-                        rightIterator = this._rightSource[Symbol.iterator]();
-                        rightEntry = void 0;
-                        _a.label = 2;
+                        if (!!_b.done) return [3 /*break*/, 10];
+                        leftEntry = _b.value;
+                        _g.label = 2;
                     case 2:
-                        if (!((rightEntry = rightIterator.next()).done == false)) return [3 /*break*/, 5];
-                        leftKey = this._leftKeySelector(leftEntry.value);
-                        rightKey = this._rightKeySelector(rightEntry.value);
-                        if (!LinqIterableBase.equals(leftKey, rightKey)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this._finalSelector(leftEntry.value, rightEntry.value)];
+                        _g.trys.push([2, 7, 8, 9]);
+                        _c = (e_13 = void 0, __values(this._rightSource)), _d = _c.next();
+                        _g.label = 3;
                     case 3:
-                        _a.sent();
-                        _a.label = 4;
-                    case 4: return [3 /*break*/, 2];
-                    case 5: return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/];
+                        if (!!_d.done) return [3 /*break*/, 6];
+                        rightEntry = _d.value;
+                        leftKey = this._leftKeySelector(leftEntry);
+                        rightKey = this._rightKeySelector(rightEntry);
+                        if (!LinqIterableBase.equals(leftKey, rightKey)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this._finalSelector(leftEntry, rightEntry)];
+                    case 4:
+                        _g.sent();
+                        _g.label = 5;
+                    case 5:
+                        _d = _c.next();
+                        return [3 /*break*/, 3];
+                    case 6: return [3 /*break*/, 9];
+                    case 7:
+                        e_13_1 = _g.sent();
+                        e_13 = { error: e_13_1 };
+                        return [3 /*break*/, 9];
+                    case 8:
+                        try {
+                            if (_d && !_d.done && (_f = _c.return)) _f.call(_c);
+                        }
+                        finally { if (e_13) throw e_13.error; }
+                        return [7 /*endfinally*/];
+                    case 9:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 10: return [3 /*break*/, 13];
+                    case 11:
+                        e_14_1 = _g.sent();
+                        e_14 = { error: e_14_1 };
+                        return [3 /*break*/, 13];
+                    case 12:
+                        try {
+                            if (_b && !_b.done && (_e = _a.return)) _e.call(_a);
+                        }
+                        finally { if (e_14) throw e_14.error; }
+                        return [7 /*endfinally*/];
+                    case 13: return [2 /*return*/];
                 }
             });
         };
@@ -621,23 +914,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqGroupJoinIterable.prototype.algo = function () {
-            var groupedRight, tmp, leftIterator, leftEntry, _loop_1, this_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var groupedRight, tmp, _loop_1, this_1, _a, _b, leftEntry, e_15_1;
+            var e_15, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         groupedRight = new LinqIterableProxy(this._rightSource).groupBy(this._rightKeySelector);
                         tmp = groupedRight.toArray();
-                        leftIterator = this._leftSource[Symbol.iterator]();
-                        _loop_1 = function () {
+                        _loop_1 = function (leftEntry) {
                             var leftKey, rightGroup;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        leftKey = this_1._leftKeySelector(leftEntry.value);
+                                        leftKey = this_1._leftKeySelector(leftEntry);
                                         rightGroup = groupedRight.singleOrUndefined(function (x) { return LinqIterableBase.equals(x.key, leftKey); });
                                         if (rightGroup === undefined)
                                             rightGroup = new LinqGrouping(leftKey, []);
-                                        return [4 /*yield*/, this_1._finalSelector(leftEntry.value, rightGroup)];
+                                        return [4 /*yield*/, this_1._finalSelector(leftEntry, rightGroup)];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];
@@ -645,14 +938,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             });
                         };
                         this_1 = this;
-                        _a.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!((leftEntry = leftIterator.next()).done == false)) return [3 /*break*/, 3];
-                        return [5 /*yield**/, _loop_1()];
+                        _d.trys.push([1, 6, 7, 8]);
+                        _a = __values(this._leftSource), _b = _a.next();
+                        _d.label = 2;
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 1];
-                    case 3: return [2 /*return*/];
+                        if (!!_b.done) return [3 /*break*/, 5];
+                        leftEntry = _b.value;
+                        return [5 /*yield**/, _loop_1(leftEntry)];
+                    case 3:
+                        _d.sent();
+                        _d.label = 4;
+                    case 4:
+                        _b = _a.next();
+                        return [3 /*break*/, 2];
+                    case 5: return [3 /*break*/, 8];
+                    case 6:
+                        e_15_1 = _d.sent();
+                        e_15 = { error: e_15_1 };
+                        return [3 /*break*/, 8];
+                    case 7:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_15) throw e_15.error; }
+                        return [7 /*endfinally*/];
+                    case 8: return [2 /*return*/];
                 }
             });
         };
@@ -671,28 +983,61 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqConcatIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_16_1, _c, _d, entry, e_17_1;
+            var e_16, _e, e_17, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
                     case 0:
-                        iterator = this.source1[Symbol.iterator]();
-                        _a.label = 1;
+                        _g.trys.push([0, 5, 6, 7]);
+                        _a = __values(this.source1), _b = _a.next();
+                        _g.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 1];
+                        _g.sent();
+                        _g.label = 3;
                     case 3:
-                        iterator = this.source2[Symbol.iterator]();
-                        _a.label = 4;
-                    case 4:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 6];
-                        return [4 /*yield*/, entry.value];
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
                     case 5:
-                        _a.sent();
-                        return [3 /*break*/, 4];
-                    case 6: return [2 /*return*/];
+                        e_16_1 = _g.sent();
+                        e_16 = { error: e_16_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_e = _a.return)) _e.call(_a);
+                        }
+                        finally { if (e_16) throw e_16.error; }
+                        return [7 /*endfinally*/];
+                    case 7:
+                        _g.trys.push([7, 12, 13, 14]);
+                        _c = __values(this.source2), _d = _c.next();
+                        _g.label = 8;
+                    case 8:
+                        if (!!_d.done) return [3 /*break*/, 11];
+                        entry = _d.value;
+                        return [4 /*yield*/, entry];
+                    case 9:
+                        _g.sent();
+                        _g.label = 10;
+                    case 10:
+                        _d = _c.next();
+                        return [3 /*break*/, 8];
+                    case 11: return [3 /*break*/, 14];
+                    case 12:
+                        e_17_1 = _g.sent();
+                        e_17 = { error: e_17_1 };
+                        return [3 /*break*/, 14];
+                    case 13:
+                        try {
+                            if (_d && !_d.done && (_f = _c.return)) _f.call(_c);
+                        }
+                        finally { if (e_17) throw e_17.error; }
+                        return [7 /*endfinally*/];
+                    case 14: return [2 /*return*/];
                 }
             });
         };
@@ -738,22 +1083,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqTakeIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_18_1;
+            var e_18, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this._source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this._source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 5];
-                        if (!(--this._count >= 0)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        if (!((--this._count) >= 0)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 4];
-                    case 3: return [2 /*return*/];
-                    case 4: return [3 /*break*/, 1];
-                    case 5: return [2 /*return*/];
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_18_1 = _d.sent();
+                        e_18 = { error: e_18_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_18) throw e_18.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -772,22 +1132,38 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqTakeWhileIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_19_1;
+            var e_19, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this._source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this._source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 5];
-                        if (!this._predicate(entry.value)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        if (!this._predicate(entry))
+                            return [2 /*return*/];
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 4];
-                    case 3: return [2 /*return*/];
-                    case 4: return [3 /*break*/, 1];
-                    case 5: return [2 /*return*/];
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_19_1 = _d.sent();
+                        e_19 = { error: e_19_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_19) throw e_19.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -806,21 +1182,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqSkipIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_20_1;
+            var e_20, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this._source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this._source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 4];
-                        if (!(--this._count < 0)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        if (!((--this._count) < 0)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [3 /*break*/, 1];
-                    case 4: return [2 /*return*/];
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_20_1 = _d.sent();
+                        e_20 = { error: e_20_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_20) throw e_20.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -839,29 +1231,47 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqSkipWhileIterable.prototype.algo = function () {
-            var doSkip, iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var doSkip, _a, _b, entry, e_21_1;
+            var e_21, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         doSkip = true;
-                        iterator = this._source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 6];
-                        if (!!doSkip) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        _d.trys.push([1, 8, 9, 10]);
+                        _a = __values(this._source), _b = _a.next();
+                        _d.label = 2;
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 5];
+                        if (!!_b.done) return [3 /*break*/, 7];
+                        entry = _b.value;
+                        if (!!doSkip) return [3 /*break*/, 4];
+                        return [4 /*yield*/, entry];
                     case 3:
-                        if (!!this._predicate(entry.value)) return [3 /*break*/, 5];
-                        doSkip = false;
-                        return [4 /*yield*/, entry.value];
+                        _d.sent();
+                        return [3 /*break*/, 6];
                     case 4:
-                        _a.sent();
-                        _a.label = 5;
-                    case 5: return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/];
+                        if (!!this._predicate(entry)) return [3 /*break*/, 6];
+                        doSkip = false;
+                        return [4 /*yield*/, entry];
+                    case 5:
+                        _d.sent();
+                        _d.label = 6;
+                    case 6:
+                        _b = _a.next();
+                        return [3 /*break*/, 2];
+                    case 7: return [3 /*break*/, 10];
+                    case 8:
+                        e_21_1 = _d.sent();
+                        e_21 = { error: e_21_1 };
+                        return [3 /*break*/, 10];
+                    case 9:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_21) throw e_21.error; }
+                        return [7 /*endfinally*/];
+                    case 10: return [2 /*return*/];
                 }
             });
         };
@@ -879,19 +1289,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqCastIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_22_1;
+            var e_22, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this.source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this.source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
                         return [3 /*break*/, 1];
-                    case 3: return [2 /*return*/];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_22_1 = _d.sent();
+                        e_22 = { error: e_22_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_22) throw e_22.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -910,21 +1337,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqOfTypeIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_23_1;
+            var e_23, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this.source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this.source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 4];
-                        if (!(entry.value instanceof this.type)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        if (!(entry instanceof this.type)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [3 /*break*/, 1];
-                    case 4: return [2 /*return*/];
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_23_1 = _d.sent();
+                        e_23 = { error: e_23_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_23) throw e_23.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -943,20 +1386,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqSelectIterable.prototype.algo = function () {
-            var index, iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_24_1;
+            var e_24, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        index = 0;
-                        iterator = this.source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this.source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.selector(entry.value, index++)];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        return [4 /*yield*/, this.selector(entry)];
                     case 2:
-                        _a.sent();
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
                         return [3 /*break*/, 1];
-                    case 3: return [2 /*return*/];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_24_1 = _d.sent();
+                        e_24 = { error: e_24_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_24) throw e_24.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -975,21 +1434,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqWhereIterable.prototype.algo = function () {
-            var iterator, entry;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b, entry, e_25_1;
+            var e_25, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        iterator = this.source[Symbol.iterator]();
-                        _a.label = 1;
+                        _d.trys.push([0, 5, 6, 7]);
+                        _a = __values(this.source), _b = _a.next();
+                        _d.label = 1;
                     case 1:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 4];
-                        if (!this.predicate(entry.value)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, entry.value];
+                        if (!!_b.done) return [3 /*break*/, 4];
+                        entry = _b.value;
+                        if (!this.predicate(entry)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, entry];
                     case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [3 /*break*/, 1];
-                    case 4: return [2 /*return*/];
+                        _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        _b = _a.next();
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 7];
+                    case 5:
+                        e_25_1 = _d.sent();
+                        e_25 = { error: e_25_1 };
+                        return [3 /*break*/, 7];
+                    case 6:
+                        try {
+                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                        }
+                        finally { if (e_25) throw e_25.error; }
+                        return [7 /*endfinally*/];
+                    case 7: return [2 /*return*/];
                 }
             });
         };
@@ -1033,7 +1508,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return this.algo();
         };
         LinqUndefinedIfEmptyIterable.prototype.algo = function () {
-            var iterator, firstEntry, entry;
+            var iterator, firstEntry, entry, entry_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1049,8 +1524,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         _a.sent();
                         _a.label = 4;
                     case 4:
-                        if (!((entry = iterator.next()).done == false)) return [3 /*break*/, 6];
-                        return [4 /*yield*/, entry.value];
+                        if (!true) return [3 /*break*/, 6];
+                        entry_1 = iterator.next();
+                        if (entry_1.done)
+                            return [3 /*break*/, 6];
+                        return [4 /*yield*/, entry_1.value];
                     case 5:
                         _a.sent();
                         return [3 /*break*/, 4];
@@ -1087,7 +1565,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         Object.defineProperty(List.prototype, "elements", {
             get: function () { return this._source; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         List.prototype.insert = function (index, item) {
@@ -1109,7 +1587,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         };
         Object.defineProperty(LinqGrouping.prototype, "key", {
             get: function () { return this._key; },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         ;
