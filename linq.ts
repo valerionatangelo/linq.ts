@@ -587,8 +587,8 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
 
     public selectMany : {
-        <TResult>(selector : (x : T) => Iterable<TResult>) : LinqIterableBase<TResult>
-        <TCollection, TResult>(selector : (x : T) => Iterable<TCollection>, finalSelector : (x : T, collection : TCollection) => TResult) : LinqIterableBase<TResult>
+        <TResult>(selector : (x : T) => Iterable<TResult>) : LinqIterableBase<TResult>;
+        <TCollection, TResult>(selector : (x : T) => Iterable<TCollection>, finalSelector : (x : T, collection : TCollection) => TResult) : LinqIterableBase<TResult>;
     } = <TCollection, TResult>(selector : (x : T) => Iterable<TCollection>, finalSelector? : (x : T, collection : TCollection) => TResult) : LinqIterableBase<TResult> => new LinqSelectManyIterable(this, selector, finalSelector);
     
     
@@ -602,7 +602,7 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             , leftKeySelector : (item: T) => TLeftKey
             , rightKeySelector : (item: TRight) => TRightKey
             , finalSelector : (leftItem : T, rightItem : TRight) => TResult
-        ) : LinqIterableBase<TResult>
+        ) : LinqIterableBase<TResult>;
 
         //overload 2
         <TRight, TLeftKey, TRightKey, TResult>(
@@ -610,7 +610,8 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             , leftKeySelector : (item: T) => TLeftKey
             , rightKeySelector : (item: TRight) => TRightKey
             , finalSelector : (leftItem : T, rightItem : TRight) => TResult
-        ) : LinqIterableBase<TResult>
+        ) : LinqIterableBase<TResult>;
+
     } = <TRight, TLeftKey, TRightKey, TResult>(
         rightIterable : Iterable<TRight>
         , leftKeySelector : (item: T) => TLeftKey
@@ -628,7 +629,7 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             , leftKeySelector : (item: T) => TLeftKey
             , rightKeySelector : (item: TRight) => TRightKey
             , finalSelector : (leftItem : T, rightGroup : LinqGrouping<TRightKey, TRight>) => TResult
-        ) : LinqIterableBase<TResult>
+        ) : LinqIterableBase<TResult>;
 
         // overload 2
         <TRight, TLeftKey, TRightKey, TResult>(
@@ -636,7 +637,8 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
             , leftKeySelector : (item: T) => TLeftKey
             , rightKeySelector : (item: TRight) => TRightKey
             , finalSelector : (leftItem : T, rightGroup : LinqGrouping<TRightKey, TRight>) => TResult
-        ) : LinqIterableBase<TResult>
+        ) : LinqIterableBase<TResult>;
+
     } = <TRight, TLeftKey, TRightKey, TResult>(
         rightIterable : Iterable<TRight>
         , leftKeySelector : (item: T) => TLeftKey
@@ -648,36 +650,36 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
     
     public concat : {
-        (otherIterable : Iterable<T>) : LinqIterableBase<T>
-        (array : T[]) : LinqIterableBase<T>
+        (otherIterable : Iterable<T>) : LinqIterableBase<T>;
+        (array : T[]) : LinqIterableBase<T>;
     } = (otherIterable : Iterable<T>) : LinqIterableBase<T> => new LinqConcatIterable(this, otherIterable);
 
 
     public union : {
-        (otherIterable : Iterable<T>) : LinqIterableBase<T>
-        (array : T[]) : LinqIterableBase<T>
+        (otherIterable : Iterable<T>) : LinqIterableBase<T>;
+        (array : T[]) : LinqIterableBase<T>;
     } = (otherIterable : Iterable<T>) : LinqIterableBase<T> => (new LinqConcatIterable(this, otherIterable)).distinct();
 
 
 
     public intersect : {
-        (otherIterable : Iterable<T>) : LinqIterableBase<T>
-        (array : T[]) : LinqIterableBase<T>
+        (otherIterable : Iterable<T>) : LinqIterableBase<T>;
+        (array : T[]) : LinqIterableBase<T>;
     } = (otherIterable : Iterable<T>) : LinqIterableBase<T> => this.where(x => (new LinqIterableProxy(otherIterable).contains(x)));
 
 
 
     public except : {
-        (otherIterable : Iterable<T>) : LinqIterableBase<T>
-        (array : T[]) : LinqIterableBase<T>
+        (otherIterable : Iterable<T>) : LinqIterableBase<T>;
+        (array : T[]) : LinqIterableBase<T>;
     } = (otherIterable : Iterable<T>) : LinqIterableBase<T> => this.where(x => !(new LinqIterableProxy(otherIterable).contains(x)));
 
 
     
     
     public groupBy: {
-        <TKey, TValue>(keySelector: (x: T) => TKey, valueSelector: (group : LinqGrouping<TKey, T>) => TValue) : LinqIterableBase<TValue>
-        <TKey>(keySelector: (x: T) => TKey): LinqIterableBase<LinqGrouping<TKey, T>>
+        <TKey, TValue>(keySelector: (x: T) => TKey, valueSelector: (group : LinqGrouping<TKey, T>) => TValue) : LinqIterableBase<TValue>;
+        <TKey>(keySelector: (x: T) => TKey): LinqIterableBase<LinqGrouping<TKey, T>>;
      } = <TKey>(keySelector: (x: T) => TKey, valueSelector?: (group : LinqGrouping<TKey, T>) => any) : LinqIterableBase<any> =>
      {
         if (!valueSelector) valueSelector = x => x;
@@ -688,8 +690,8 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
 
      public any : {
-        () : boolean
-        (predicate: (x: T) => boolean) : boolean
+        () : boolean;
+        (predicate: (x: T) => boolean) : boolean;
     } = (predicate?: (x: T) => boolean) : boolean => {
         let iterable : Iterable<T> = this;
         if (predicate === undefined) predicate = x => true;
@@ -716,9 +718,12 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
     public contains = (element : T) : boolean => this.any(x => LinqIterableBase.equals(x, element));
 
     
+       
+
+
     public sum : {
-        () : number
-        (selector : (x: T) => number) : number
+        () : number;
+        (selector : (x: T) => number) : number;
    } = (selector?: (x: T) => number) : number => {
        let iterable : LinqIterableBase<T> = this;
        
@@ -743,72 +748,52 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
    }
 
 
-
-   
    public min : {
-        () : number | undefined
-        (selector : (x: T) => number) : number | undefined
-    } = (selector?: (x: T) => number) : number | undefined => {
-    let iterable : LinqIterableBase<T> = this;
-    
+    () : number;
+    (selector : (x: T) => number) : number;
+} = (selector?: (x: T) => number) : number => {
+   let iterable : LinqIterableBase<T> = this;
+   
 
-    if (selector === undefined) selector = x => (x as any) as number;
-    let result : number | undefined = undefined;
+   if (selector === undefined) selector = x => (x as any) as number;
+   let result : number = undefined;
 
-    for (let entry in iterable) {
+   for (let entry of iterable) {
         let n = selector(entry as any as T); // compiler bug
         if (result === undefined || result > n)
             result = n;
     }
 
-    /*
-    let iterator = iterable[Symbol.iterator]();
-    let entry: IteratorResult<T>;
-    while ((entry = iterator.next()).done == false) 
-        {
-            let n = selector(entry.value);
-            if (result === undefined || result > n)
-                result = n;
-        }*/
+   return result;
+}
 
-    return result;
+
+public max : {
+    () : number;
+    (selector : (x: T) => number) : number;
+} = (selector?: (x: T) => number) : number => {
+   let iterable : LinqIterableBase<T> = this;
+   
+
+   if (selector === undefined) selector = x => (x as any) as number;
+   let result : number = undefined;
+
+   for (let entry of iterable) {
+        let n = selector(entry as any as T); // compiler bug
+        if (result === undefined || result < n)
+            result = n;
     }
 
+   return result;
+}
 
+    
 
-    public max : {
-        () : number | undefined
-        (selector : (x: T) => number) : number | undefined
-    } = (selector?: (x: T) => number) : number | undefined => {
-        let iterable : LinqIterableBase<T> = this;
-        
-
-        if (selector === undefined) selector = x => (x as any) as number;
-        let result : number | undefined = undefined;
-
-        
-        for (let entry in iterable) {
-            let n = selector(entry as any as T); // compiler bug
-            if (result === undefined || result < n)
-                result = n;
-        }
-
-        /*let iterator = iterable[Symbol.iterator]();
-        let entry: IteratorResult<T>;
-        while ((entry = iterator.next()).done == false) 
-        {
-            let n = selector(entry.value);
-            if (result === undefined || result < n)
-                result = n;
-        }*/
-
-        return result;
-    }
 
 
     public count : {
-        () : number
-        (predicate : (x: T) => boolean) : number
+        () : number;
+        (predicate : (x: T) => boolean) : number;
     } = (predicate?: (x: T) => boolean) : number => {
         let iterable : LinqIterableBase<T> = this;
         if (predicate !== undefined) iterable = iterable.where(predicate);
@@ -830,8 +815,8 @@ export abstract class LinqIterableBase<T> implements Iterable<T> {
 
 
     public average : {
-        () : number | undefined
-        (selector : (x: T) => number) : number | undefined
+        () : number | undefined;
+        (selector : (x: T) => number) : number | undefined;
     } = (selector?: (x: T) => number) : number | undefined => {
         var count = this.count();
         if (count == 0) return undefined;
