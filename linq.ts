@@ -1280,8 +1280,11 @@ export class LinqSelectIterable<TSource, TResult> extends LinqIterableBase<TResu
     }
 
     private * algo(): IterableIterator<TResult> {
-        for (let entry of this.source)
-               yield this.selector(entry);
+        let i = 0;
+        for (let entry of this.source) {
+            yield this.selector(entry, i);
+            i++;
+        }
     }
 }
 
